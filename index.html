@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Email Ảo - Made with by khangdevxcoder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark-bg: #0f172a;
+            --dark-card: #1e293b;
+            --dark-border: #334155;
+            --light-bg: #f8fafc;
+            --light-card: #ffffff;
+            --light-border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-theme {
+            background: linear-gradient(45deg, var(--dark-bg), #1e293b, #334155);
+            color: #f1f5f9;
+        }
+
+        body.light-theme {
+            background: linear-gradient(45deg, #f1f5f9, #e2e8f0, #cbd5e1);
+            color: #1e293b;
+        }
+
+        /* Card */
+        .card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.3),
+                0 5px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        body.light-theme .card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* Nút */
+        .btn {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Email item */
+        .email-item {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-theme .email-item {
+            background: rgba(241, 245, 249, 0.8);
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .email-item:hover {
+            background: rgba(51, 65, 85, 0.7);
+            box-shadow: 
+                0 6px 12px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        body.light-theme .email-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 6px 12px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        /* Copied indicator */
+        .copied-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .copied-indicator.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transform-origin: left center;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .progress-bar.loading {
+            animation: loading 2s infinite ease-in-out;
+        }
+
+        @keyframes loading {
+            0%, 100% { transform: scaleX(0); }
+            50% { transform: scaleX(0.7); }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* Logo animation */
+        .logo {
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Cột grid cho email list */
+        .email-grid {
+            display: grid;
+            gap: 12px;
+            transition: grid-template-columns 0.3s ease;
+        }
+
+        body.dark-theme .email-grid {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        body.light-theme .email-grid {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        @media (max-width: 768px) {
+            body.dark-theme .email-grid,
+            body.light-theme .email-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Search box */
+        .search-box {
+            position: relative;
+        }
+
+        .search-box::after {
+            content: '\f002';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        body.light-theme .search-box::after {
+            color: #94a3b8;
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 4px;
+        }
+
+        body.light-theme .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(226, 232, 240, 0.5);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        body.light-theme .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        body.light-theme .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Dropdown menu */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: var(--dark-card);
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        body.light-theme .dropdown-content {
+            background-color: var(--light-card);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-content a {
+            color: #f1f5f9;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        body.light-theme .dropdown-content a {
+            color: #1e293b;
+        }
+
+        .dropdown-content a:hover {
+            background-color: rgba(59, 130, 246, 0.2);
+        }
+
+        body.light-theme .dropdown-content a:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .dropdown.show .dropdown-content {
+            display: block;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 8px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #f1f5f9;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        body.light-theme .pagination button {
+            background: rgba(241, 245, 249, 0.8);
+            color: #1e293b;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .pagination button.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-theme .theme-toggle {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alert box */
+        .alert-box {
+            background: rgba(251, 191, 36, 0.2);
+            border-left: 4px solid #f59e0b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        body.light-theme .alert-box {
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .alert-box i {
+            margin-right: 12px;
+            color: #f59e0b;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .alert-box p {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .alert-box ul {
+            margin: 8px 0 0 24px;
+            padding: 0;
+        }
+
+        .alert-box li {
+            margin-bottom: 4px;
+        }
+
+        /* Domain tag */
+        .domain-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .domain-tag.gmail {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        body.light-theme .domain-tag.gmail {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .domain-tag.googlemail {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        body.light-theme .domain-tag.googlemail {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .domain-tag.custom {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        body.light-theme .domain-tag.custom {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .domain-tag i {
+            margin-right: 6px;
+        }
+
+        /* Cancel button */
+        .cancel-button {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+
+        .cancel-button:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.1);
+        }
+
+        /* Tab styles */
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn:hover {
+            background-color: rgba(139, 92, 246, 0.1);
+        }
+        
+        .tab-btn.active {
+            color: #8b5cf6;
+            border-bottom: 2px solid #8b5cf6;
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <!-- Theme toggle -->
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </div>
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="card p-8 w-full relative">
+            <!-- Cancel button -->
+            <button id="cancelButton" class="cancel-button hidden" onclick="cancelGeneration()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <div class="logo text-4xl mr-3">📧</div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        Tạo Email Ảo
+                    </h1>
+                </div>
+                <div class="text-sm text-gray-400">
+                    Made with by khangdevxcoder
+                </div>
+            </div>
+            
+            <!-- Hiển thị giờ VN -->
+            <div class="text-center mb-4">
+                <span id="vnTime" class="text-sm text-gray-400"></span>
+            </div>
+            
+            <div class="mb-6">
+                <label for="realEmail" class="block text-sm font-medium text-gray-300 mb-2">Nhập Gmail thật</label>
+                <input type="email" id="realEmail" placeholder="example@gmail.com" 
+                       class="p-3 w-full bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-white placeholder-gray-400">
+            </div>
+            
+            <!-- Hướng dẫn sử dụng -->
+            <div class="alert-box mt-4">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <p><strong>📖 Hướng dẫn sử dụng:</strong></p>
+                    <ul class="list-disc list-inside text-sm">
+                        <li>Nếu bạn nhập <strong>Gmail thật</strong> (ví dụ: <code>abc@gmail.com</code>):  
+                            Các alias như <code>a.bc@gmail.com</code>, <code>ab.c@gmail.com</code>, <code>abc+1@gmail.com</code>…  
+                            <u>đều sẽ gửi mail về cùng inbox</u> của địa chỉ gốc <code>abc@gmail.com</code>.
+                        </li>
+                        <li>Nếu bạn nhập <strong>domain custom</strong> (ví dụ: <code>@mydomain.com</code>):  
+                            Các alias chỉ mang tính <u>demo dạng text</u>, không dùng để nhận mail, trừ khi bạn sở hữu domain và đã cấu hình email cho domain đó.</li>
+                        <li>Bạn có thể sao chép hoặc xuất toàn bộ danh sách alias ra file TXT/CSV để sử dụng.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Tùy chọn tạo email</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="includeGooglemail" class="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500 border-slate-600 rounded bg-slate-800">
+                            <span class="text-sm text-gray-300">Tạo thêm email với @googlemail.com</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="includePlus" class="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500 border-slate-600 rounded bg-slate-800">
+                            <span class="text-sm text-gray-300">Bao gồm biến thể với ký tự +</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Giới hạn số lượng email mỗi trang</label>
+                <div class="flex items-center">
+                    <input type="range" id="emailLimit" min="10" max="100" value="50" 
+                           class="flex-grow h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                    <span id="limitValue" class="ml-3 text-sm text-gray-300 w-16">50</span>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium text-gray-300">Domain (chỉ mang tính demo)</label>
+                    <div class="domain-tag gmail">
+                        <i class="fas fa-check-circle"></i>
+                        <span>@gmail.com</span>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="customDomain" placeholder="custom.com" 
+                           class="flex-grow p-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-white placeholder-gray-400">
+                    <button onclick="addCustomDomain()" class="btn bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg">
+                        Thêm
+                    </button>
+                </div>
+                
+                <div id="domainList" class="flex flex-wrap gap-2"></div>
+                
+                <div class="alert-box mt-2">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Lưu ý: Alias với domain custom chỉ là text, không dùng để nhận mail trừ khi bạn sở hữu domain đó.</p>
+                </div>
+            </div>
+            
+            <button onclick="generateEmails()" id="generateButton" class="w-full btn bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-lg font-semibold mb-4">
+                <i class="fas fa-magic mr-2"></i>Tạo Ngay
+            </button>
+            
+            <div class="mb-4 hidden" id="progressContainer">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm text-gray-300">Đang tạo email...</span>
+                    <span id="progressText" class="text-sm text-gray-300">0%</span>
+                </div>
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="mb-4 flex flex-wrap justify-between items-center gap-2">
+                <div class="flex items-center">
+                    <p id="emailCount" class="text-sm text-gray-300">Số email ảo: 0</p>
+                    <div class="dropdown ml-2">
+                        <button id="copyExportButton" class="btn bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-copy mr-1"></i>
+                            <span>Thao tác</span>
+                            <i class="fas fa-chevron-down ml-2"></i>
+                        </button>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="copyAllEmails()"><i class="fas fa-copy mr-2"></i>Sao chép toàn bộ</a>
+                            <a href="#" onclick="exportEmails('txt')"><i class="fas fa-file-alt mr-2"></i>Xuất TXT</a>
+                            <a href="#" onclick="exportEmails('csv')"><i class="fas fa-file-csv mr-2"></i>Xuất CSV</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button id="previousPage" class="btn bg-gradient-to-r from-gray-600 to-gray-700 text-white px-3 py-1 rounded-lg text-sm hidden">
+                        <i class="fas fa-chevron-left mr-1"></i>Trước
+                    </button>
+                    <span id="pageInfo" class="text-sm text-gray-300"></span>
+                    <button id="nextPage" class="btn bg-gradient-to-r from-gray-600 to-gray-700 text-white px-3 py-1 rounded-lg text-sm hidden">
+                        <i class="fas fa-chevron-right mr-1"></i>Sau
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tabs phân loại -->
+            <div class="mb-4">
+                <div class="flex border-b border-slate-700 mb-2">
+                    <button class="tab-btn px-4 py-2 font-medium text-purple-500 border-b-2 border-purple-500 active" data-tab="all">
+                        Tất cả
+                    </button>
+                    <button class="tab-btn px-4 py-2 font-medium text-gray-400 hover:text-gray-300" data-tab="dots">
+                        Biến thể dấu chấm
+                    </button>
+                    <button class="tab-btn px-4 py-2 font-medium text-gray-400 hover:text-gray-300" data-tab="plus">
+                        Biến thể dấu cộng
+                    </button>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="searchBox" placeholder="Tìm kiếm email..." 
+                           onkeyup="filterEmails()" 
+                           class="w-full p-3 pl-10 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-white placeholder-gray-400">
+                </div>
+            </div>
+            
+            <div id="emailList" class="email-grid custom-scrollbar max-h-96 overflow-y-auto"></div>
+            
+            <div id="paginationContainer" class="pagination hidden"></div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="toastMessage">Đã sao chép!</span>
+    </div>
+
+    <script>
+        // Quản lý domain
+        let customDomains = [];
+        let isGenerating = false;
+        let generationCancelled = false;
+        let currentTab = 'all';
+        
+        // Debounce timer
+        let debounceTimer;
+        
+        // Cập nhật giờ Việt Nam
+        function updateVNTime() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Ho_Chi_Minh',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            const timeString = now.toLocaleTimeString('vi-VN', options);
+            document.getElementById("vnTime").textContent = "⏰ Bây giờ: " + timeString + " (Giờ VN)";
+        }
+        
+        setInterval(updateVNTime, 1000);
+        updateVNTime();
+        
+        function addCustomDomain() {
+            const customDomainInput = document.getElementById('customDomain');
+            const domain = customDomainInput.value.trim();
+            
+            if (domain && !domain.startsWith('@')) {
+                const fullDomain = '@' + domain;
+                if (!customDomains.includes(fullDomain)) {
+                    customDomains.push(fullDomain);
+                    updateDomainList();
+                    customDomainInput.value = '';
+                    showToast('Đã thêm domain: ' + fullDomain);
+                }
+            }
+        }
+        
+        function updateDomainList() {
+            const domainList = document.getElementById('domainList');
+            domainList.innerHTML = '';
+            
+            // Hiển thị @gmail.com
+            const gmailTag = document.createElement('div');
+            gmailTag.className = 'domain-tag gmail';
+            gmailTag.innerHTML = '<i class="fas fa-check-circle"></i><span>@gmail.com</span>';
+            domainList.appendChild(gmailTag);
+            
+            // Hiển thị @googlemail.com nếu được chọn
+            if (document.getElementById('includeGooglemail').checked) {
+                const googlemailTag = document.createElement('div');
+                googlemailTag.className = 'domain-tag googlemail';
+                googlemailTag.innerHTML = '<i class="fas fa-check-circle"></i><span>@googlemail.com</span>';
+                domainList.appendChild(googlemailTag);
+            }
+            
+            // Hiển thị custom domains
+            customDomains.forEach((domain, index) => {
+                const domainTag = document.createElement('div');
+                domainTag.className = 'domain-tag custom';
+                domainTag.innerHTML = `
+                    <span>${domain}</span>
+                    <button onclick="removeCustomDomain(${index})" class="ml-2 text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                domainList.appendChild(domainTag);
+            });
+        }
+        
+        function removeCustomDomain(index) {
+            customDomains.splice(index, 1);
+            updateDomainList();
+        }
+        
+        // Phân trang
+        let currentPage = 1;
+        let totalPages = 1;
+        let allEmails = [];
+        let filteredEmails = [];
+        
+        // Hủy quá trình tạo email
+        function cancelGeneration() {
+            generationCancelled = true;
+            document.getElementById('cancelButton').classList.add('hidden');
+            document.getElementById('generateButton').disabled = false;
+            showToast('Đã hủy quá trình tạo email');
+        }
+        
+        // Validate email
+        function validateEmail(email) {
+            const gmailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/;
+            const customDomainRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return gmailRegex.test(email) || customDomainRegex.test(email);
+        }
+        
+        // Sanitize input
+        function sanitizeInput(text) {
+            return text.replace(/[<>]/g, '');
+        }
+        
+        // Generator function để tạo email
+        function* generateEmailVariations(localPart, includePlus, domains) {
+            const chars = localPart.split('');
+            const maxEmails = 5000;
+            let count = 0;
+            
+            // Tạo biến thể dấu chấm
+            function* generateDotVariations(current, pos, domain) {
+                if (pos === chars.length) {
+                    yield current + domain;
+                    count++;
+                    return;
+                }
+                
+                yield* generateDotVariations(current + chars[pos], pos + 1, domain);
+                
+                if (pos < chars.length - 1) {
+                    yield* generateDotVariations(current + chars[pos] + '.', pos + 1, domain);
+                }
+            }
+            
+            // Tạo biến thể dấu cộng
+            function* generatePlusVariations(current, pos, domain) {
+                if (pos === chars.length) {
+                    yield current + domain;
+                    count++;
+                    return;
+                }
+                
+                yield* generatePlusVariations(current + chars[pos], pos + 1, domain);
+                
+                if (pos < chars.length - 1) {
+                    yield* generatePlusVariations(current + chars[pos] + '+', pos + 1, domain);
+                }
+            }
+            
+            // Tạo biến thể kết hợp
+            function* generateCombinedVariations(current, pos, domain) {
+                if (pos === chars.length) {
+                    yield current + domain;
+                    count++;
+                    return;
+                }
+                
+                // Không thêm ký tự đặc biệt
+                yield* generateCombinedVariations(current + chars[pos], pos + 1, domain);
+                
+                // Thêm dấu chấm
+                if (pos < chars.length - 1) {
+                    yield* generateCombinedVariations(current + chars[pos] + '.', pos + 1, domain);
+                }
+                
+                // Thêm dấu cộng
+                if (pos < chars.length - 1) {
+                    yield* generateCombinedVariations(current + chars[pos] + '+', pos + 1, domain);
+                }
+            }
+            
+            // Lặp qua tất cả domains đã chọn
+            for (const domain of domains) {
+                if (includePlus) {
+                    yield* generateCombinedVariations('', 0, domain);
+                } else {
+                    yield* generateDotVariations('', 0, domain);
+                }
+                
+                // Kiểm tra giới hạn
+                if (count >= maxEmails) break;
+            }
+        }
+        
+        // Tạo email ảo
+        async function generateEmails() {
+            if (isGenerating) return;
+            
+            isGenerating = true;
+            generationCancelled = false;
+            
+            const realEmail = document.getElementById('realEmail').value.trim();
+            const includeGooglemail = document.getElementById('includeGooglemail').checked;
+            const includePlus = document.getElementById('includePlus').checked;
+            const limit = parseInt(document.getElementById('emailLimit').value);
+            const emailList = document.getElementById('emailList');
+            const emailCount = document.getElementById('emailCount');
+            const generateButton = document.getElementById('generateButton');
+            const progressBar = document.getElementById('progressBar');
+            const progressContainer = document.getElementById('progressContainer');
+            const cancelButton = document.getElementById('cancelButton');
+            
+            emailList.innerHTML = '';
+            progressContainer.classList.remove('hidden');
+            progressBar.classList.remove('loading');
+            progressBar.style.transform = 'scaleX(0)';
+            document.getElementById('progressText').textContent = '0%';
+            cancelButton.classList.remove('hidden');
+            
+            // Thêm spinner vào nút
+            generateButton.innerHTML = '<div class="spinner mr-2"></div>Đang tạo...';
+            generateButton.disabled = true;
+            
+            // Validate email
+            if (!validateEmail(realEmail)) {
+                emailList.innerHTML = '<div class="email-item p-3 text-red-400 text-sm col-span-full">Vui lòng nhập địa chỉ email hợp lệ!</div>';
+                emailCount.textContent = 'Số email ảo: 0';
+                progressContainer.classList.add('hidden');
+                generateButton.innerHTML = '<i class="fas fa-magic mr-2"></i>Tạo Ngay';
+                generateButton.disabled = false;
+                cancelButton.classList.add('hidden');
+                isGenerating = false;
+                return;
+            }
+            
+            const localPart = realEmail.split('@')[0].replace(/\./g, '');
+            if (localPart.length < 2) {
+                emailList.innerHTML = '<div class="email-item p-3 text-red-400 text-sm col-span-full">Phần tên email quá ngắn để tạo biến thể!</div>';
+                emailCount.textContent = 'Số email ảo: 0';
+                progressContainer.classList.add('hidden');
+                generateButton.innerHTML = '<i class="fas fa-magic mr-2"></i>Tạo Ngay';
+                generateButton.disabled = false;
+                cancelButton.classList.add('hidden');
+                isGenerating = false;
+                return;
+            }
+            
+            // Build selectedDomains từ các tùy chọn
+            let selectedDomains = ['@gmail.com'];
+            if (includeGooglemail) {
+                selectedDomains.push('@googlemail.com');
+            }
+            selectedDomains = selectedDomains.concat(customDomains);
+            
+            // Sử dụng generator để tạo email từng phần
+            const emailGenerator = generateEmailVariations(localPart, includePlus, selectedDomains);
+            allEmails = [];
+            let batch = [];
+            let totalGenerated = 0;
+            
+            for (const email of emailGenerator) {
+                batch.push(email);
+                totalGenerated++;
+                
+                // Cập nhật tiến độ mỗi 100 email
+                if (totalGenerated % 100 === 0) {
+                    const progress = Math.min(100, Math.round((totalGenerated / 5000) * 100));
+                    document.getElementById('progressText').textContent = `${progress}% (${totalGenerated}/5000)`;
+                    progressBar.style.transform = `scaleX(${progress / 100})`;
+                    
+                    // Cập nhật số email đã tạo
+                    emailCount.textContent = `Số email ảo: ${totalGenerated}`;
+                    
+                    // Cho phép UI cập nhật
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+                
+                // Nếu đã đủ số lượng hiển thị, tạm dừng
+                if (batch.length >= 100 && totalGenerated % 100 === 0) {
+                    allEmails.push(...batch);
+                    batch = [];
+                    filterEmails();
+                    displayEmails();
+                }
+                
+                // Kiểm tra hủy
+                if (generationCancelled) {
+                    progressContainer.classList.add('hidden');
+                    generateButton.innerHTML = '<i class="fas fa-magic mr-2"></i>Tạo Ngay';
+                    generateButton.disabled = false;
+                    cancelButton.classList.add('hidden');
+                    isGenerating = false;
+                    return;
+                }
+            }
+            
+            // Thêm phần còn lại
+            if (batch.length > 0) {
+                allEmails.push(...batch);
+                filterEmails();
+                displayEmails();
+            }
+            
+            // Cập nhật UI
+            progressContainer.classList.add('hidden');
+            generateButton.innerHTML = '<i class="fas fa-magic mr-2"></i>Tạo Ngay';
+            generateButton.disabled = false;
+            cancelButton.classList.add('hidden');
+            isGenerating = false;
+            
+            showToast(`Hoàn thành! Đã tạo ${allEmails.length} email`);
+        }
+        
+        // Lọc email với debounce
+        function filterEmails() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+                
+                // Lọc theo tab hiện tại
+                if (currentTab === 'all') {
+                    filteredEmails = allEmails.filter(email => 
+                        email.toLowerCase().includes(searchTerm)
+                    );
+                } else if (currentTab === 'dots') {
+                    filteredEmails = allEmails.filter(email => 
+                        email.toLowerCase().includes(searchTerm) && 
+                        email.includes('.') && 
+                        !email.includes('+')
+                    );
+                } else if (currentTab === 'plus') {
+                    filteredEmails = allEmails.filter(email => 
+                        email.toLowerCase().includes(searchTerm) && 
+                        email.includes('+')
+                    );
+                }
+                
+                // Cập nhật phân trang
+                const limit = parseInt(document.getElementById('emailLimit').value);
+                totalPages = Math.ceil(filteredEmails.length / limit);
+                currentPage = 1;
+                
+                // Hiển thị email
+                displayEmails();
+            }, 300);
+        }
+        
+        // Hiển thị email theo trang
+        function displayEmails() {
+            const emailList = document.getElementById('emailList');
+            const limit = parseInt(document.getElementById('emailLimit').value);
+            const startIndex = (currentPage - 1) * limit;
+            const endIndex = startIndex + limit;
+            const emailsToShow = filteredEmails.slice(startIndex, endIndex);
+            
+            emailList.innerHTML = '';
+            
+            emailsToShow.forEach((email, index) => {
+                const emailItem = document.createElement('div');
+                emailItem.className = 'email-item p-3';
+                emailItem.textContent = email;
+                emailItem.onclick = () => copyToClipboard(email, emailItem);
+                
+                emailList.appendChild(emailItem);
+                
+                // Delay animation
+                setTimeout(() => {
+                    emailItem.style.animationDelay = `${index * 0.05}s`;
+                }, 10);
+            });
+            
+            // Cập nhật thông tin phân trang
+            updatePagination();
+        }
+        
+        // Cập nhật phân trang
+        function updatePagination() {
+            const pageInfo = document.getElementById('pageInfo');
+            const previousButton = document.getElementById('previousPage');
+            const nextButton = document.getElementById('nextPage');
+            const paginationContainer = document.getElementById('paginationContainer');
+            
+            if (totalPages <= 1) {
+                pageInfo.textContent = '';
+                previousButton.classList.add('hidden');
+                nextButton.classList.add('hidden');
+                paginationContainer.classList.add('hidden');
+                return;
+            }
+            
+            pageInfo.textContent = `Trang ${currentPage} / ${totalPages}`;
+            previousButton.classList.remove('hidden');
+            nextButton.classList.remove('hidden');
+            paginationContainer.classList.remove('hidden');
+            
+            previousButton.disabled = currentPage === 1;
+            nextButton.disabled = currentPage === totalPages;
+        }
+        
+        // Xử lý phân trang
+        document.getElementById('previousPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayEmails();
+            }
+        });
+        
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayEmails();
+            }
+        });
+        
+        // Sao chép vào clipboard với hiệu ứng inline
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Hiển thị toast
+                showToast(`Đã sao chép: ${text}`);
+                
+                // Hiển thị indicator inline
+                const indicator = document.createElement('div');
+                indicator.className = 'copied-indicator';
+                indicator.textContent = 'Đã sao chép!';
+                element.appendChild(indicator);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    indicator.classList.add('show');
+                }, 10);
+                
+                // Ẩn indicator sau 2 giây
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                    setTimeout(() => {
+                        element.removeChild(indicator);
+                    }, 300);
+                }, 2000);
+            }).catch(err => {
+                console.error('Lỗi khi sao chép: ', err);
+                showToast('Lỗi khi sao chép, vui lòng thử lại!');
+            });
+        }
+        
+        // Sao chép tất cả email
+        function copyAllEmails() {
+            if (filteredEmails.length > 1000) {
+                if (!confirm(`Bạn đang cố gắng sao chép ${filteredEmails.length} email. Điều này có thể làm chậm trình duyệt. Bạn có muốn tiếp tục?`)) {
+                    return;
+                }
+            }
+            
+            const textToCopy = filteredEmails.join('\n');
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast(`Đã sao chép ${filteredEmails.length} email!`);
+            }).catch(err => {
+                console.error('Lỗi khi sao chép toàn bộ: ', err);
+                showToast('Lỗi khi sao chép toàn bộ, vui lòng thử lại!');
+            });
+        }
+        
+        // Export email
+        function exportEmails(format) {
+            if (filteredEmails.length === 0) {
+                showToast('Không có email để xuất!');
+                return;
+            }
+            
+            // Sanitize từng email
+            const sanitizedEmails = filteredEmails.map(email => sanitizeInput(email));
+            
+            if (format === 'txt') {
+                const content = sanitizedEmails.join('\n');
+                downloadFile(content, 'email-aliases.txt', 'text/plain');
+            } else if (format === 'csv') {
+                const content = 'Email\n' + sanitizedEmails.join('\n');
+                downloadFile(content, 'email-aliases.csv', 'text/csv');
+            }
+        }
+        
+        // Tải file
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Đã tải xuống: ${filename}`);
+        }
+        
+        // Cập nhật domain list khi thay đổi checkbox
+        document.getElementById('includeGooglemail').addEventListener('change', updateDomainList);
+        
+        // Cập nhật giá trị giới hạn
+        const emailLimit = document.getElementById('emailLimit');
+        const limitValue = document.getElementById('limitValue');
+        emailLimit.addEventListener('input', () => {
+            limitValue.textContent = emailLimit.value;
+        });
+        
+        // Hiển thị toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Load saved theme
+        window.addEventListener('load', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'light') {
+                toggleTheme();
+            } else if (!savedTheme && prefersDark) {
+                toggleTheme();
+            }
+        });
+        
+        // Dropdown menu
+        const copyExportButton = document.getElementById('copyExportButton');
+        const dropdown = document.querySelector('.dropdown');
+        
+        copyExportButton.addEventListener('click', () => {
+            dropdown.classList.toggle('show');
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        // Tabs phân loại
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active tab
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('text-purple-500', 'border-b-2', 'border-purple-500', 'active');
+                        btn.classList.add('text-gray-400');
+                    });
+                    
+                    button.classList.remove('text-gray-400');
+                    button.classList.add('text-purple-500', 'border-b-2', 'border-purple-500', 'active');
+                    
+                    // Filter emails based on tab
+                    currentTab = button.dataset.tab;
+                    filterEmails();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
